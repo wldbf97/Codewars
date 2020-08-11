@@ -1,36 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import ProblemDetail from './ProblemDetail';
 import { getProblemList } from './api/problems';
-import CodeMirror from "react-codemirror";
-
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/mode/javascript/javascript';
-
-function ProblemDetail({ problem }) {
-  return (
-    <div className="problem">
-      <section className="description">
-        <h3>{problem.title}</h3>
-        <p>{problem.description}</p>
-      </section>
-      <section className="code-editor">
-        <CodeMirror 
-          value={'function solution() {}'}
-          options={{
-            mode: 'javascript'
-          }}
-        />
-        <button>제출</button>
-      </section>
-    </div>
-  )
-}
+import  { BrowserRouter as Router, Route, Link,  } from "react-router-dom";
 
 function App() {
   const [ problems, setProblems ] = useState([]);
-  const [ selectedProblemId, setSelectedProblemId ] = useState(null);
 
-  const [ selectedProblem ] = problems.filter(data => data.id === selectedProblemId);
 
   useEffect(function () {
     async function getProblems(){
@@ -42,9 +18,9 @@ function App() {
   },[]);
 
   return (
+    <Router>
       <div className="App">
-        {
-          selectedProblemId === null &&
+        <Route path="/" exact>
           <>
           <nav>
             Codewars
@@ -55,19 +31,30 @@ function App() {
                 return (
                   <li key={problem.id}>
                     <h3>{problem.title}</h3>
-                    <button onClick={()=> setSelectedProblemId(problem.id)}>문제풀기</button>
+                    <Link to={`/problems/${problem._id}`}>
+                      <button >문제풀기</button>
+                    </Link>
                   </li>
                 );
               })
-            }
+            };
           </ul>
           </>
-        }
-        {
-          selectedProblemId !== null &&
-          <ProblemDetail problem={ selectedProblem } />
-        }
+        </Route>
+        <Route
+          path="/problems/:problem_id"
+          render={routeProps => {
+            const problemId = routeProps.match.params.problem_id;
+            const [ selectedProblem ] = problems.filter(data => data._id === problemId);
+
+            return(
+              <ProblemDetail problem={ selectedProblem } />
+            );
+          }}
+        >
+        </Route>
       </div>
+    </Router>
   );
 }
 
